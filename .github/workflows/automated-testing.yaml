@@ -9,7 +9,7 @@ jobs:
     name: Test report and PR comment formation
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
 
       - name: Generate processing report
         id: report
