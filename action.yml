@@ -1,0 +1,150 @@
+name: 'TODO Registrar Statistic'
+description: 'Scan for unregistered TODO comments and post a sticky summary comment on pull requests'
+author: 'Aeliot-Tm'
+
+branding:
+  icon: 'bar-chart-2'
+  color: 'blue'
+
+inputs:
+  config:
+    description: 'Inline YAML configuration. If empty, scans the whole repository (/code) with the built-in default'
+    required: false
+    default: ''
+  verbosity:
+    description: 'Verbosity level: quiet, normal, verbose, very-verbose, debug'
+    required: false
+    default: 'normal'
+
+outputs:
+  unregistered_count:
+    description: 'Number of unregistered TODOs from the processing report (summary.todos.registered)'
+    value: ${{ steps.report.outputs.unregistered_count || '0' }}
+  comment_id:
+    description: 'ID of the PR comment that was created or updated'
+    value: ${{ steps.comment.outputs.comment_id || '' }}
+  comment_created:
+    description: 'Whether a new comment was created (true) or an existing one was updated (false)'
+    value: ${{ steps.comment.outputs.comment_created || 'false' }}
+
+runs:
+  using: 'composite'
+  steps:
+
+    - name: Resolve pull request number
+      id: pr
+      shell: bash
+      run: |
+        PR_NUMBER="$(jq -r '.pull_request.number // empty' "${GITHUB_EVENT_PATH}")"
+
+        if [[ -z "$PR_NUMBER" ]]; then
+          echo "::error::This action must be triggered by a pull_request event."
+          exit 1
+        fi
+
+        echo "number=$PR_NUMBER" >> "$GITHUB_OUTPUT"
+
+    - name: Map verbosity to flag
+      id: verbosity
+      shell: bash
+      run: |
+        VERBOSITY="${{ inputs.verbosity }}"
+        VERBOSITY="${VERBOSITY:-normal}"
+
+        case "$VERBOSITY" in
+          quiet)
+            echo "flag=-q" >> $GITHUB_OUTPUT
+            ;;
+          normal)
+            echo "flag=" >> $GITHUB_OUTPUT
+            ;;
+          verbose)
+            echo "flag=-v" >> $GITHUB_OUTPUT
+            ;;
+          very-verbose)
+            echo "flag=-vv" >> $GITHUB_OUTPUT
+            ;;
+          debug)
+            echo "flag=-vvv" >> $GITHUB_OUTPUT
+            ;;
+          *)
+            echo "::error::Invalid verbosity level: $VERBOSITY. Valid values: quiet, normal, verbose, very-verbose, debug"
+            exit 1
+            ;;
+        esac
+
+    - name: Prepare configuration
+      id: config
+      shell: bash
+      run: |
+        CONFIG_FILE="${RUNNER_TEMP}/todo-registrar-config.yaml"
+
+        read -r -d '' CONFIG_CONTENT <<'EOF' || true
+        ${{ inputs.config }}
+        EOF
+
+        if [[ -n "$CONFIG_CONTENT" ]]; then
+          printf '%s\n' "$CONFIG_CONTENT" > "$CONFIG_FILE"
+        else
+          printf '%s\n' \
+            'paths:' \
+            '  in: /code' \
+            'registrar:' \
+            '  type: DryRun' > "$CONFIG_FILE"
+        fi
+
+        echo "path=$CONFIG_FILE" >> "$GITHUB_OUTPUT"
+
+    - name: Run TODO Registrar (dry-run)
+      id: registrar
+      shell: bash
+      run: |
+        REPORT_PATH="${RUNNER_TEMP}/todo-registrar-report.json"
+        REPORT_FLAGS="--dry-run --report-format=json --report-path=/runner-temp/todo-registrar-report.json"
+
+        cat "${{ steps.config.outputs.path }}" | docker run --rm -i \
+          -v "${{ github.workspace }}:/code" \
+          -v "${RUNNER_TEMP}:/runner-temp" \
+          ghcr.io/aeliot-tm/todo-registrar:4.1.0 \
+          ${{ steps.verbosity.outputs.flag }} \
+          --config=STDIN \
+          $REPORT_FLAGS
+
+        echo "path=$REPORT_PATH" >> "$GITHUB_OUTPUT"
+
+    - name: Extract report metrics
+      id: report
+      shell: bash
+      run: |
+        REPORT_PATH="${{ steps.registrar.outputs.path }}"
+
+        if [[ ! -f "$REPORT_PATH" ]]; then
+          echo "::warning::Processing report is not available."
+          echo "unregistered_count=0" >> "$GITHUB_OUTPUT"
+          exit 0
+        fi
+
+        UNREGISTERED="$(jq -r '.summary.todos.registered // 0' "$REPORT_PATH")"
+        echo "unregistered_count=$UNREGISTERED" >> "$GITHUB_OUTPUT"
+
+    - name: Build PR comment
+      id: body
+      shell: bash
+      env:
+        COMMIT_SHA: ${{ github.sha }}
+      run: |
+        COMMENT_PATH="${RUNNER_TEMP}/pr-comment.md"
+        "${{ github.action_path }}/scripts/build-pr-comment.sh" \
+          "${{ steps.registrar.outputs.path }}" \
+          "$COMMENT_PATH"
+        echo "path=$COMMENT_PATH" >> "$GITHUB_OUTPUT"
+
+    - name: Upsert PR comment
+      id: comment
+      shell: bash
+      env:
+        GITHUB_TOKEN: ${{ github.token }}
+      run: |
+        "${{ github.action_path }}/scripts/upsert-pr-comment.sh" \
+          "${{ steps.pr.outputs.number }}" \
+          "${{ steps.body.outputs.path }}"

@@ -1,0 +1,4 @@
+paths:
+  in: /code/.github
+registrar:
+  type: DryRun

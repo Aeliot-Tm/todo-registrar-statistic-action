@@ -1,0 +1,69 @@
+name: Automated Testing
+
+on:
+  push:
+    branches: ['**']
+
+jobs:
+  test-report-comment-body:
+    name: Test report and PR comment formation
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Generate processing report
+        id: report
+        run: |
+          REPORT_PATH="${{ runner.temp }}/todo-registrar-report.json"
+
+          cat tests/fixtures/todo-registrar.yaml | docker run --rm -i \
+            -v "${{ github.workspace }}:/code" \
+            -v "${{ runner.temp }}:/runner-temp" \
+            ghcr.io/aeliot-tm/todo-registrar:4.1.0 \
+            --dry-run \
+            --config=STDIN \
+            --report-format=json \
+            --report-path=/runner-temp/todo-registrar-report.json
+
+          jq -e '.summary.todos | has("registered") and has("newIssues") and has("glued")' "$REPORT_PATH"
+          if jq -e 'has("meta")' "$REPORT_PATH" >/dev/null 2>&1; then
+            jq -e '.meta.dryRun == true' "$REPORT_PATH"
+          fi
+          echo "path=$REPORT_PATH" >> "$GITHUB_OUTPUT"
+
+      - name: Verify comment from generated report
+        env:
+          GITHUB_REPOSITORY: ${{ github.repository }}
+          GITHUB_RUN_ID: ${{ github.run_id }}
+          GITHUB_SERVER_URL: ${{ github.server_url }}
+        run: |
+          COMMENT_PATH="${{ runner.temp }}/generated-comment.md"
+          export COMMIT_SHA="$(git rev-parse HEAD)"
+
+          scripts/build-pr-comment.sh "${{ steps.report.outputs.path }}" "$COMMENT_PATH"
+
+          grep -Fq 'TODO-REGISTRAR-STATISTIC:START' "$COMMENT_PATH"
+          grep -q '^> \[!TIP\]' "$COMMENT_PATH"
+          grep -q 'No unregistered TODOs found' "$COMMENT_PATH"
+          ! grep -q '^## Unregistered TODO summary$' "$COMMENT_PATH"
+          ! grep -q 'No unregistered TODO detected' "$COMMENT_PATH"
+          ! grep -q 'automated registration' "$COMMENT_PATH"
+          ! grep -q 'newly added' "$COMMENT_PATH"
+
+      - name: Verify comment matches fixture (non-empty report)
+        run: |
+          REPORT_PATH="${{ runner.temp }}/fixture-report.json"
+          COMMENT_PATH="${{ runner.temp }}/fixture-comment.md"
+
+          cp tests/fixtures/report.json "$REPORT_PATH"
+          scripts/build-comment-fixture.sh "$REPORT_PATH" "$COMMENT_PATH"
+          diff -u tests/fixtures/comment.expected.md "$COMMENT_PATH"
+
+      - name: Verify comment matches fixture (empty report)
+        run: |
+          REPORT_PATH="${{ runner.temp }}/empty-report.json"
+          COMMENT_PATH="${{ runner.temp }}/empty-comment.md"
+
+          cp tests/fixtures/report-empty.json "$REPORT_PATH"
+          scripts/build-comment-fixture.sh "$REPORT_PATH" "$COMMENT_PATH"
+          diff -u tests/fixtures/comment-empty.expected.md "$COMMENT_PATH"
