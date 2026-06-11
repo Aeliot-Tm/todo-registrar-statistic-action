@@ -3,8 +3,8 @@ set -euo pipefail
 
 REPORT_PATH="${1:?report path required}"
 COMMENT_PATH="${2:?comment output path required}"
-LOGO_URL="https://raw.githubusercontent.com/Aeliot-Tm/todo-registrar-statistic-action/main/docs/logo.svg"
-ACTION_LINK="[TODO Registrar Statistic Action](https://github.com/Aeliot-Tm/todo-registrar-statistic-action)"
+LOGO_URL="https://raw.githubusercontent.com/Aeliot-Tm/todo-registrar-statistic-action/main/docs/logo-in-comment.svg"
+ACTION_URL="https://github.com/Aeliot-Tm/todo-registrar-statistic-action"
 MARKER_START="<!-- TODO-REGISTRAR-STATISTIC:START -->"
 MARKER_END="<!-- TODO-REGISTRAR-STATISTIC:END -->"
 
@@ -20,23 +20,52 @@ pluralize() {
   fi
 }
 
-write_alert() {
-  local registered="$1"
-  local analyzed="$2"
+write_logo_linked() {
+  echo "<a href=\"${ACTION_URL}\"><img src=\"${LOGO_URL}\" alt=\"TODO Registrar\" /></a>"
+}
 
-  if [[ "$registered" -eq 0 ]]; then
-    echo "> [!TIP]"
-    if [[ -n "$analyzed" ]]; then
-      echo "> No unregistered TODOs found. Scanned **${analyzed}** $(pluralize "$analyzed" "file" "files")."
-    else
-      echo "> No unregistered TODOs found."
-    fi
+write_empty_alert() {
+  local analyzed="$1"
+
+  echo "> [!TIP]"
+  if [[ -n "$analyzed" ]]; then
+    echo "> No unregistered TODOs found. Scanned **${analyzed}** $(pluralize "$analyzed" "file" "files")."
   else
-    echo "> [!NOTE]"
-    echo "> Currently **${registered}** unregistered $(pluralize "$registered" "TODO" "TODOs") in the scanned codebase."
-    echo "> This reflects the current state of the PR branch, not only TODOs added in this pull request."
-    echo "> Report by ${ACTION_LINK}."
+    echo "> No unregistered TODOs found."
   fi
+}
+
+write_metrics_header() {
+  local registered="$1"
+  local new_issues="$2"
+  local glued="$3"
+
+  echo '<table>'
+  echo '<tr>'
+  echo '<td rowspan="2" align="center" valign="middle" width="40%">'
+  write_logo_linked
+  echo '</td>'
+  echo '<th align="center">Unregistered</th>'
+  echo '<th align="center">New issues</th>'
+  echo '<th align="center">Glued</th>'
+  echo '</tr>'
+  echo '<tr>'
+  echo "<td align=\"center\"><strong>${registered}</strong></td>"
+  echo "<td align=\"center\"><strong>${new_issues}</strong></td>"
+  echo "<td align=\"center\"><strong>${glued}</strong></td>"
+  echo '</tr>'
+  echo '</table>'
+}
+
+write_metric_legend() {
+  echo "<details>"
+  echo "<summary><strong>Metric definitions</strong></summary>"
+  echo ""
+  echo "- **Unregistered** — TODO comments without an issue key that would be registered"
+  echo "- **New issues** — new tracker tickets that would be created (\`registered - glued\`)"
+  echo "- **Glued** — TODOs that would reuse an existing issue key"
+  echo ""
+  echo "</details>"
 }
 
 write_footer() {
@@ -61,46 +90,37 @@ write_footer() {
 {
   echo "$MARKER_START"
   echo ""
-  echo '<div align="center">'
-  echo ""
-  echo "![TODO Registrar](${LOGO_URL})"
-  echo ""
-  echo '</div>'
-  echo ""
 
   if [[ -f "$REPORT_PATH" ]]; then
     read -r REGISTERED NEW_ISSUES GLUED <<< "$(jq -r '.summary.todos | "\(.registered) \(.newIssues) \(.glued)"' "$REPORT_PATH")"
     ANALYZED="$(jq -r '.summary.files.analyzed // empty' "$REPORT_PATH")"
     UNREGISTERED_FILES="$(jq '[.files[]? | select(.summary.todos.registered > 0)] | length' "$REPORT_PATH")"
 
-    write_alert "$REGISTERED" "$ANALYZED"
+    if [[ "$REGISTERED" -eq 0 ]]; then
+      echo '<div align="center">'
+      echo ""
+      write_logo_linked
+      echo ""
+      echo '</div>'
+      echo ""
+      write_empty_alert "$ANALYZED"
+    else
+      write_metrics_header "$REGISTERED" "$NEW_ISSUES" "$GLUED"
 
-    if [[ "$REGISTERED" -gt 0 ]]; then
-      echo ""
-      echo "---"
-      echo ""
-      echo "## Unregistered TODO summary"
-      echo ""
+      if [[ "$UNREGISTERED_FILES" -gt 0 ]]; then
+        echo ""
+        echo "<details>"
+        echo "<summary><strong>Files with unregistered TODOs</strong> (${UNREGISTERED_FILES})</summary>"
+        echo ""
+        echo "| File | Unregistered TODOs |"
+        echo "|------|-------------------:|"
+        jq -r '.files | map(select(.summary.todos.registered > 0)) | sort_by(-.summary.todos.registered) | .[] | "| `\(.path)` | \(.summary.todos.registered) |"' "$REPORT_PATH"
+        echo ""
+        echo "</details>"
+      fi
 
-      echo "| Unregistered | New issues | Glued |"
-      echo "| :----------: | :--------: | :---: |"
-      echo "| **${REGISTERED}** | **${NEW_ISSUES}** | **${GLUED}** |"
       echo ""
-      echo "- **Unregistered** — TODO comments without an issue key that would be registered"
-      echo "- **New issues** — new tracker tickets that would be created (\`registered - glued\`)"
-      echo "- **Glued** — TODOs that would reuse an existing issue key"
-    fi
-
-    if [[ "$UNREGISTERED_FILES" -gt 0 ]]; then
-      echo ""
-      echo "<details>"
-      echo "<summary><strong>Files with unregistered TODOs</strong> (${UNREGISTERED_FILES})</summary>"
-      echo ""
-      echo "| File | Unregistered TODOs |"
-      echo "|------|-------------------:|"
-      jq -r '.files | map(select(.summary.todos.registered > 0)) | sort_by(-.summary.todos.registered) | .[] | "| `\(.path)` | \(.summary.todos.registered) |"' "$REPORT_PATH"
-      echo ""
-      echo "</details>"
+      write_metric_legend
     fi
 
     write_footer

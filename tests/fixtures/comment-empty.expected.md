@@ -2,7 +2,7 @@
 
 <div align="center">
 
-![TODO Registrar](https://raw.githubusercontent.com/Aeliot-Tm/todo-registrar-statistic-action/main/docs/logo.svg)
+<a href="https://github.com/Aeliot-Tm/todo-registrar-statistic-action"><img src="https://raw.githubusercontent.com/Aeliot-Tm/todo-registrar-statistic-action/main/docs/logo-in-comment.svg" alt="TODO Registrar" /></a>
 
 </div>
 

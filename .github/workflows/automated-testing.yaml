@@ -49,6 +49,7 @@ jobs:
           ! grep -q 'No unregistered TODO detected' "$COMMENT_PATH"
           ! grep -q 'automated registration' "$COMMENT_PATH"
           ! grep -q 'newly added' "$COMMENT_PATH"
+          ! grep -q '\[!NOTE\]' "$COMMENT_PATH"
 
       - name: Verify comment matches fixture (non-empty report)
         run: |
@@ -58,6 +59,8 @@ jobs:
           cp tests/fixtures/report.json "$REPORT_PATH"
           scripts/build-comment-fixture.sh "$REPORT_PATH" "$COMMENT_PATH"
           diff -u tests/fixtures/comment.expected.md "$COMMENT_PATH"
+          ! grep -q '\[!NOTE\]' "$COMMENT_PATH"
+          grep -Fq '<table>' "$COMMENT_PATH"
 
       - name: Verify comment matches fixture (empty report)
         run: |
