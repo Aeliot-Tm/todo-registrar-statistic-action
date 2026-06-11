@@ -1,3 +1,8 @@
+![logo.svg](docs/logo.svg)
+
+[![Testing](https://github.com/Aeliot-Tm/todo-registrar-statistic-action/actions/workflows/automated-testing.yaml/badge.svg?branch=main)](https://github.com/Aeliot-Tm/todo-registrar-statistic-action/actions/workflows/automated-testing.yaml?query=branch%3Amain)
+[![GitHub License](https://img.shields.io/github/license/Aeliot-Tm/todo-registrar-statistic-action?label=License)](LICENSE)
+
 # TODO Registrar Statistic Action
 
 GitHub Action that scans a pull request branch for unregistered TODO comments and posts a sticky summary comment on the pull request.
