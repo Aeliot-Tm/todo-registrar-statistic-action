@@ -1,4 +1,4 @@
-![logo.svg](docs/logo.svg)
+![logo.svg](https://raw.githubusercontent.com/Aeliot-Tm/todo-registrar-statistic-action/main/docs/logo.svg)
 
 [![Testing](https://github.com/Aeliot-Tm/todo-registrar-statistic-action/actions/workflows/automated-testing.yaml/badge.svg?branch=main)](https://github.com/Aeliot-Tm/todo-registrar-statistic-action/actions/workflows/automated-testing.yaml?query=branch%3Amain)
 [![GitHub License](https://img.shields.io/github/license/Aeliot-Tm/todo-registrar-statistic-action?label=License)](LICENSE)
@@ -7,11 +7,11 @@
 
 GitHub Action that scans a pull request branch for unregistered TODO comments and posts a sticky summary comment on the pull request.
 
-![comment-with-todo.png](docs/comment-with-todo.png)
+![Comment with unregistered TODOs](https://raw.githubusercontent.com/Aeliot-Tm/todo-registrar-statistic-action/main/docs/comment-with-todo.png)
 
 Or then no unregistered TODOs found:
 
-![comment-without-todo.png](docs/comment-without-todo.png)
+![Comment without unregistered TODOs](https://raw.githubusercontent.com/Aeliot-Tm/todo-registrar-statistic-action/main/docs/comment-without-todo.png)
 
 The action does not create tickets or modify source files.
 
