@@ -13,7 +13,7 @@ Or then no unregistered TODOs found:
 
 ![comment-without-todo.png](docs/comment-without-todo.png)
 
-No issue tracker credentials are required. The action does not create tickets or modify source files.
+The action does not create tickets or modify source files.
 
 ### Features
 
