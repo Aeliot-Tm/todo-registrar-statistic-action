@@ -47,6 +47,7 @@ With no `config` input, the action scans the whole repository (`/code`).
 2. [Inputs](docs/inputs.md) — input reference.
 3. [Permissions](docs/permissions.md) — required workflow permissions.
 4. [Examples](docs/examples.md) — workflow YAML for common setups.
+5. [GitHub App](docs/github-app.md) — post comments as `todo-registrar[bot]` without repository secrets.
 
 ## External documentation
 

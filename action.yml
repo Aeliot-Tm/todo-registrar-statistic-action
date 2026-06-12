@@ -15,6 +15,10 @@ inputs:
     description: 'Verbosity level: quiet, normal, verbose, very-verbose, debug'
     required: false
     default: 'normal'
+  comment_token:
+    description: 'Internal: token for posting PR comments. Leave empty to use GITHUB_TOKEN (github-actions[bot])'
+    required: false
+    default: ''
 
 outputs:
   unregistered_count:
@@ -143,7 +147,7 @@ runs:
       id: comment
       shell: bash
       env:
-        GITHUB_TOKEN: ${{ github.token }}
+        GITHUB_TOKEN: ${{ inputs.comment_token || github.token }}
       run: |
         "${{ github.action_path }}/scripts/upsert-pr-comment.sh" \
           "${{ steps.pr.outputs.number }}" \

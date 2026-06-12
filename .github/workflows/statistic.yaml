@@ -1,0 +1,39 @@
+name: TODO Registrar Statistic
+
+on:
+  workflow_call:
+    inputs:
+      config:
+        description: 'Inline YAML configuration for TODO Registrar'
+        required: false
+        type: string
+        default: ''
+      verbosity:
+        description: 'Verbosity level: quiet, normal, verbose, very-verbose, debug'
+        required: false
+        type: string
+        default: 'normal'
+
+jobs:
+  statistic:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pull-requests: write
+
+    steps:
+      - uses: actions/checkout@v6
+
+      - name: Create GitHub App token
+        id: app-token
+        uses: actions/create-github-app-token@v1
+        with:
+          app-id: ${{ secrets.TODO_REGISTRAR_APP_ID }}
+          private-key: ${{ secrets.TODO_REGISTRAR_APP_PRIVATE_KEY }}
+
+      - name: TODO Registrar statistic
+        uses: ./
+        with:
+          config: ${{ inputs.config }}
+          verbosity: ${{ inputs.verbosity }}
+          comment_token: ${{ steps.app-token.outputs.token }}
