@@ -25,9 +25,33 @@ jobs:
       - uses: Aeliot-Tm/todo-registrar-statistic-action@0.1.0
 ```
 
-## Custom scan paths
+## Custom config
 
-Override `config` to limit which directories are scanned. Start from the [built-in configuration](how-it-works.md#built-in-configuration) and change `paths.in` (for example `/code/src`).
+Override `config` to limit which directories are scanned.
+Start from the [built-in configuration](how-it-works.md#built-in-configuration)
+and change `paths.in` (for example `/code/src`).
+
+```yaml
+  # ...
+  - name: TODO statistic
+    uses: Aeliot-Tm/todo-registrar-statistic-action@0.1.0
+    with:
+      config: |
+        paths:
+          in: .
+          exclude:
+            - tests/fixtures
+            - var
+            - vendor
+        process:
+          glueSameTickets: true
+          glueSequentialComments: true
+        registrar:
+          type: DryRun
+        tags:
+          - todo
+          - fixme
+```
 
 ## Read outputs in a follow-up step
 
