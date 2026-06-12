@@ -24,15 +24,26 @@ write_logo_linked() {
   echo "<a href=\"${ACTION_URL}\"><img src=\"${LOGO_URL}\" alt=\"TODO Registrar\" /></a>"
 }
 
-write_empty_alert() {
+write_empty_header() {
   local analyzed="$1"
 
+  echo '<table>'
+  echo '<tr>'
+  echo '<td align="center" valign="middle" width="40%">'
+  write_logo_linked
+  echo '</td>'
+  echo '<td valign="middle">'
+  echo ""
   echo "> [!TIP]"
   if [[ -n "$analyzed" ]]; then
     echo "> No unregistered TODOs found. Scanned **${analyzed}** $(pluralize "$analyzed" "file" "files")."
   else
     echo "> No unregistered TODOs found."
   fi
+  echo ""
+  echo '</td>'
+  echo '</tr>'
+  echo '</table>'
 }
 
 write_metrics_header() {
@@ -68,25 +79,6 @@ write_metric_legend() {
   echo "</details>"
 }
 
-write_footer() {
-  local server_url="${GITHUB_SERVER_URL:-https://github.com}"
-  local repository="${GITHUB_REPOSITORY:-}"
-  local run_id="${GITHUB_RUN_ID:-}"
-  local commit_sha="${COMMIT_SHA:-}"
-
-  [[ -n "$run_id" && -n "$repository" ]] || return 0
-
-  local workflow_url="${server_url}/${repository}/actions/runs/${run_id}"
-  local footer="> Run by [workflow #${run_id}](${workflow_url})"
-
-  if [[ -n "$commit_sha" ]]; then
-    footer+=" · [view commit](${server_url}/${repository}/commit/${commit_sha})"
-  fi
-
-  echo ""
-  echo "$footer"
-}
-
 {
   echo "$MARKER_START"
   echo ""
@@ -97,13 +89,7 @@ write_footer() {
     UNREGISTERED_FILES="$(jq '[.files[]? | select(.summary.todos.registered > 0)] | length' "$REPORT_PATH")"
 
     if [[ "$REGISTERED" -eq 0 ]]; then
-      echo '<div align="center">'
-      echo ""
-      write_logo_linked
-      echo ""
-      echo '</div>'
-      echo ""
-      write_empty_alert "$ANALYZED"
+      write_empty_header "$ANALYZED"
     else
       write_metrics_header "$REGISTERED" "$NEW_ISSUES" "$GLUED"
 
@@ -123,13 +109,11 @@ write_footer() {
       write_metric_legend
     fi
 
-    write_footer
     echo ""
     echo "$MARKER_END"
   else
     echo "> [!WARNING]"
     echo "> Processing report is not available."
-    write_footer
     echo ""
     echo "$MARKER_END"
   fi
