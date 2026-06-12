@@ -68,25 +68,6 @@ write_metric_legend() {
   echo "</details>"
 }
 
-write_footer() {
-  local server_url="${GITHUB_SERVER_URL:-https://github.com}"
-  local repository="${GITHUB_REPOSITORY:-}"
-  local run_id="${GITHUB_RUN_ID:-}"
-  local commit_sha="${COMMIT_SHA:-}"
-
-  [[ -n "$run_id" && -n "$repository" ]] || return 0
-
-  local workflow_url="${server_url}/${repository}/actions/runs/${run_id}"
-  local footer="> Run by [workflow #${run_id}](${workflow_url})"
-
-  if [[ -n "$commit_sha" ]]; then
-    footer+=" · [view commit](${server_url}/${repository}/commit/${commit_sha})"
-  fi
-
-  echo ""
-  echo "$footer"
-}
-
 {
   echo "$MARKER_START"
   echo ""
@@ -123,13 +104,11 @@ write_footer() {
       write_metric_legend
     fi
 
-    write_footer
     echo ""
     echo "$MARKER_END"
   else
     echo "> [!WARNING]"
     echo "> Processing report is not available."
-    write_footer
     echo ""
     echo "$MARKER_END"
   fi
