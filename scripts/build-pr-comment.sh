@@ -24,15 +24,26 @@ write_logo_linked() {
   echo "<a href=\"${ACTION_URL}\"><img src=\"${LOGO_URL}\" alt=\"TODO Registrar\" /></a>"
 }
 
-write_empty_alert() {
+write_empty_header() {
   local analyzed="$1"
 
+  echo '<table>'
+  echo '<tr>'
+  echo '<td align="center" valign="middle" width="40%">'
+  write_logo_linked
+  echo '</td>'
+  echo '<td valign="middle">'
+  echo ""
   echo "> [!TIP]"
   if [[ -n "$analyzed" ]]; then
     echo "> No unregistered TODOs found. Scanned **${analyzed}** $(pluralize "$analyzed" "file" "files")."
   else
     echo "> No unregistered TODOs found."
   fi
+  echo ""
+  echo '</td>'
+  echo '</tr>'
+  echo '</table>'
 }
 
 write_metrics_header() {
@@ -78,13 +89,7 @@ write_metric_legend() {
     UNREGISTERED_FILES="$(jq '[.files[]? | select(.summary.todos.registered > 0)] | length' "$REPORT_PATH")"
 
     if [[ "$REGISTERED" -eq 0 ]]; then
-      echo '<div align="center">'
-      echo ""
-      write_logo_linked
-      echo ""
-      echo '</div>'
-      echo ""
-      write_empty_alert "$ANALYZED"
+      write_empty_header "$ANALYZED"
     else
       write_metrics_header "$REGISTERED" "$NEW_ISSUES" "$GLUED"
 
