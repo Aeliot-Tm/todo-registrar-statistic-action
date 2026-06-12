@@ -52,7 +52,8 @@ jobs:
 
 ## Custom scan paths
 
-Override `config` to limit which directories are scanned. Start from the [built-in configuration](how-it-works.md#built-in-configuration) and change `paths.in` (for example `/code/src`).
+Override `config` to limit which directories are scanned. Start from the [built-in configuration](how-it-works.md#built-in-configuration)
+and change `paths.in` (for example `/code/src`).
 
 ## Read outputs in a follow-up step
 
