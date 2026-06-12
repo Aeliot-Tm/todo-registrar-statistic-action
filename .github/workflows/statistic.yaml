@@ -17,9 +17,6 @@ on:
 jobs:
   statistic:
     runs-on: ubuntu-latest
-    # Repository secrets are not available to cross-repo workflow_call callers.
-    # Store app credentials in this environment (in the action repository).
-    environment: todo-registrar-bot
     permissions:
       contents: read
       pull-requests: write
@@ -31,13 +28,11 @@ jobs:
         shell: bash
         run: |
           if [[ -z "${{ secrets.TODO_REGISTRAR_APP_ID }}" ]]; then
-            echo "::error::TODO_REGISTRAR_APP_ID is missing."
-            echo "::error::Add TODO_REGISTRAR_APP_ID and TODO_REGISTRAR_APP_PRIVATE_KEY to the 'todo-registrar-bot' environment in Aeliot-Tm/todo-registrar-statistic-action (Settings → Environments)."
+            echo "::error::TODO_REGISTRAR_APP_ID is missing in Aeliot-Tm/todo-registrar-statistic-action repository secrets."
             exit 1
           fi
           if [[ -z "${{ secrets.TODO_REGISTRAR_APP_PRIVATE_KEY }}" ]]; then
-            echo "::error::TODO_REGISTRAR_APP_PRIVATE_KEY is missing."
-            echo "::error::Add it to the 'todo-registrar-bot' environment in Aeliot-Tm/todo-registrar-statistic-action."
+            echo "::error::TODO_REGISTRAR_APP_PRIVATE_KEY is missing in Aeliot-Tm/todo-registrar-statistic-action repository secrets."
             exit 1
           fi
 
@@ -53,4 +48,4 @@ jobs:
         with:
           config: ${{ inputs.config }}
           verbosity: ${{ inputs.verbosity }}
-          comment_token: ${{ steps.app-token.outputs.token }}
+          github_token: ${{ steps.app-token.outputs.token }}

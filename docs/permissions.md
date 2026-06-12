@@ -17,10 +17,7 @@ permissions:
 
 ## TODO Registrar GitHub App
 
-To post comments as the `todo-registrar` bot without storing credentials in your repository,
-install the [TODO Registrar GitHub App](https://github.com/apps/todo-registrar)
-and use the [reusable workflow](examples.md#post-comments-as-the-todo-registrar-bot).
-The app must be installed on each repository where comments should be posted.
+Install the [TODO Registrar GitHub App](https://github.com/apps/todo-registrar) on each repository where comments should be posted. Use the [reusable workflow](examples.md#post-comments-as-the-todo-registrar-bot); consumer repositories do not need workflow secrets.
 
 ## Repository settings
 

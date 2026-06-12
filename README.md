@@ -33,10 +33,7 @@ permissions:
 
 jobs:
   statistic:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v6
-      - uses: Aeliot-Tm/todo-registrar-statistic-action@v1
+    uses: Aeliot-Tm/todo-registrar-statistic-action/.github/workflows/statistic.yaml@v1
 ```
 
 With no `config` input, the action scans the whole repository (`/code`).
@@ -47,7 +44,7 @@ With no `config` input, the action scans the whole repository (`/code`).
 2. [Inputs](docs/inputs.md) — input reference.
 3. [Permissions](docs/permissions.md) — required workflow permissions.
 4. [Examples](docs/examples.md) — workflow YAML for common setups.
-5. [GitHub App](docs/github-app.md) — post comments as `todo-registrar[bot]` without repository secrets.
+5. [GitHub App](docs/github-app.md) — install the app so comments appear as `todo-registrar[bot]`.
 
 ## External documentation
 

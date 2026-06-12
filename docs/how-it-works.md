@@ -71,6 +71,7 @@ The action always completes successfully. When no unregistered TODOs are found, 
 - The processing report provides per-file counts only — no line numbers or TODO text.
 - Statistics cover the full scanned codebase (`paths` from config), not a git diff filter.
 - Fork pull requests are skipped (the default token cannot comment on upstream PRs).
+- When using the composite action directly, comments appear as `github-actions[bot]`. The [reusable workflow](examples.md#post-comments-as-the-todo-registrar-bot) posts as `todo-registrar[bot]` via a GitHub App token created from maintainer repository secrets.
 - Per-issue details from the processing report are not shown in the PR comment in v1.
 
 ## Built-in configuration
