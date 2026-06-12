@@ -52,7 +52,7 @@ jobs:
     uses: Aeliot-Tm/todo-registrar-statistic-action/.github/workflows/statistic.yaml@v1
 ```
 
-App credentials live only in the action repository secrets. Your workflow does not pass or store any token.
+App credentials live in the `todo-registrar-bot` environment of the action repository (see [GitHub App](github-app.md)). Your workflow does not pass or store any token.
 
 If you switch from `github-actions[bot]` to the app, delete the existing sticky comment once:
 GitHub only allows the comment author to update it.
