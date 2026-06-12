@@ -15,8 +15,16 @@ inputs:
     description: 'Verbosity level: quiet, normal, verbose, very-verbose, debug'
     required: false
     default: 'normal'
+  post_as_app:
+    description: 'Post PR comments via the TODO Registrar GitHub App (todo-registrar[bot])'
+    required: false
+    default: 'true'
+  posting_service_url:
+    description: 'Maintainer-hosted posting service URL. Used when post_as_app is true'
+    required: false
+    default: 'https://todo-registrar-posting.aeliot-tm.workers.dev'
   github_token:
-    description: 'Token for posting PR comments. Defaults to GITHUB_TOKEN (github-actions[bot])'
+    description: 'Token for posting PR comments when post_as_app is false. Defaults to GITHUB_TOKEN (github-actions[bot])'
     required: false
     default: ''
 
@@ -147,8 +155,17 @@ runs:
       id: comment
       shell: bash
       env:
+        POST_AS_APP: ${{ inputs.post_as_app }}
+        POSTING_SERVICE_URL: ${{ inputs.posting_service_url }}
         GITHUB_TOKEN: ${{ inputs.github_token || github.token }}
       run: |
-        "${{ github.action_path }}/scripts/upsert-pr-comment.sh" \
-          "${{ steps.pr.outputs.number }}" \
-          "${{ steps.body.outputs.path }}"
+        if [[ "$POST_AS_APP" == "true" ]]; then
+          "${{ github.action_path }}/scripts/post-via-app-service.sh" \
+            "$POSTING_SERVICE_URL" \
+            "${{ steps.pr.outputs.number }}" \
+            "${{ steps.body.outputs.path }}"
+        else
+          "${{ github.action_path }}/scripts/upsert-pr-comment.sh" \
+            "${{ steps.pr.outputs.number }}" \
+            "${{ steps.body.outputs.path }}"
+        fi

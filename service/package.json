@@ -1,0 +1,15 @@
+{
+  "name": "todo-registrar-posting-service",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "start": "node src/server.js",
+    "check": "node --check src/server.js && node --check src/worker.js && node --check src/handler.js && node --check src/github-app.js && node --check src/oidc.js && node --check src/upsert-comment.js"
+  },
+  "dependencies": {
+    "jose": "^5.9.6"
+  },
+  "engines": {
+    "node": ">=20"
+  }
+}

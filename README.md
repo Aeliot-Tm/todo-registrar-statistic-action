@@ -14,11 +14,13 @@ No issue tracker credentials are required. The action does not create tickets or
 - Scans the repository and counts TODO comments without an issue key.
 - Sticky PR comment updated on each push (found by HTML marker, not comment position).
 - Summary of unregistered TODOs with per-file breakdown.
+- Posts as **`todo-registrar[bot]`** when the GitHub App is installed (no workflow secrets in consumer repos).
 - Always succeeds; reports when no unregistered TODOs are found.
 
 ## Quick start
 
-Create a workflow file at `.github/workflows/todo-registrar-statistic.yaml`:
+1. [Install the TODO Registrar GitHub App](https://github.com/apps/todo-registrar) on your repository.
+2. Create `.github/workflows/todo-registrar-statistic.yaml`:
 
 ```yaml
 name: TODO statistic
@@ -30,10 +32,14 @@ on:
 permissions:
   contents: read
   pull-requests: write
+  id-token: write
 
 jobs:
   statistic:
-    uses: Aeliot-Tm/todo-registrar-statistic-action/.github/workflows/statistic.yaml@v1
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+      - uses: Aeliot-Tm/todo-registrar-statistic-action@v1
 ```
 
 With no `config` input, the action scans the whole repository (`/code`).
@@ -45,6 +51,7 @@ With no `config` input, the action scans the whole repository (`/code`).
 3. [Permissions](docs/permissions.md) — required workflow permissions.
 4. [Examples](docs/examples.md) — workflow YAML for common setups.
 5. [GitHub App](docs/github-app.md) — install the app so comments appear as `todo-registrar[bot]`.
+6. [Posting service](service/README.md) — maintainer deployment guide.
 
 ## External documentation
 

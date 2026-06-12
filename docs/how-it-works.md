@@ -12,7 +12,9 @@ On each run, the action:
 2. Prepares runtime options (verbosity, configuration).
 3. Scans the repository for TODO comments without an issue key.
 4. Builds a markdown comment from the processing report.
-5. Creates or updates a single PR comment identified by an HTML marker.
+5. Requests an OIDC token from GitHub Actions (`id-token: write`).
+6. Sends the comment body and OIDC token to the maintainer posting service.
+7. The service validates the token, mints a GitHub App installation token, and creates or updates a single PR comment identified by an HTML marker.
 
 ```mermaid
 flowchart TD
@@ -21,11 +23,13 @@ flowchart TD
   C --> D[Prepare inline config]
   D --> E[Run TODO Registrar scan]
   E --> F[Build PR comment]
-  F --> G{Marker comment exists?}
-  G -->|yes| H[PATCH comment]
-  G -->|no| I[POST comment]
-  H --> J[Finish successfully]
-  I --> J
+  F --> G[Request OIDC token]
+  G --> H[Posting service]
+  H --> I{Marker comment exists?}
+  I -->|yes| J[PATCH comment as todo-registrar bot]
+  I -->|no| K[POST comment as todo-registrar bot]
+  J --> L[Finish successfully]
+  K --> L
 ```
 
 ## Step-by-step
@@ -61,8 +65,11 @@ It does not claim that all listed TODOs were added in this pull request.
 
 ### 6. Upsert PR comment
 
-[`scripts/upsert-pr-comment.sh`](../scripts/upsert-pr-comment.sh) finds an existing comment containing
-`<!-- TODO-REGISTRAR-STATISTIC:START -->` and updates it, or creates a new comment if none exists.
+When `post_as_app` is `true` (default), [`scripts/post-via-app-service.sh`](../scripts/post-via-app-service.sh)
+sends the comment body and an OIDC token to the [maintainer posting service](../service/README.md).
+
+When `post_as_app` is `false`, [`scripts/upsert-pr-comment.sh`](../scripts/upsert-pr-comment.sh) posts with
+`GITHUB_TOKEN` as `github-actions[bot]`.
 
 The action always completes successfully. When no unregistered TODOs are found, the comment says so.
 
@@ -70,8 +77,9 @@ The action always completes successfully. When no unregistered TODOs are found, 
 
 - The processing report provides per-file counts only — no line numbers or TODO text.
 - Statistics cover the full scanned codebase (`paths` from config), not a git diff filter.
-- Fork pull requests are skipped (the default token cannot comment on upstream PRs).
-- When using the composite action directly, comments appear as `github-actions[bot]`. The [reusable workflow](examples.md#post-comments-as-the-todo-registrar-bot) posts as `todo-registrar[bot]` via a GitHub App token created from maintainer repository secrets.
+- Fork pull requests are skipped when posting via the GitHub App or `GITHUB_TOKEN`.
+- `post_as_app: false` posts as `github-actions[bot]` instead of `todo-registrar[bot]`.
+- The maintainer must deploy the [posting service](../service/README.md) before `post_as_app: true` works for consumers.
 - Per-issue details from the processing report are not shown in the PR comment in v1.
 
 ## Built-in configuration

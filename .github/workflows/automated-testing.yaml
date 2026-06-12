@@ -5,6 +5,26 @@ on:
     branches: ['**']
 
 jobs:
+  test-posting-service:
+    name: Verify posting service sources
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: npm
+          cache-dependency-path: service/package.json
+
+      - name: Install service dependencies
+        working-directory: service
+        run: npm install
+
+      - name: Verify service sources
+        working-directory: service
+        run: npm run check
+
   test-report-comment-body:
     name: Test report and PR comment formation
     runs-on: ubuntu-latest

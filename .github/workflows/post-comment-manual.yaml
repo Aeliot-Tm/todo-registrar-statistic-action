@@ -1,0 +1,41 @@
+name: Post comment (manual)
+
+on:
+  workflow_dispatch:
+    inputs:
+      target_repository:
+        description: 'Target repository in owner/name format'
+        required: true
+        type: string
+      pr_number:
+        description: 'Pull request number'
+        required: true
+        type: string
+      comment_body:
+        description: 'Comment body (Markdown)'
+        required: true
+        type: string
+
+jobs:
+  post:
+    if: github.repository == 'Aeliot-Tm/todo-registrar-statistic-action'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+
+      - name: Create GitHub App installation token
+        id: app-token
+        uses: actions/create-github-app-token@v3
+        with:
+          app-id: ${{ secrets.TODO_REGISTRAR_APP_ID }}
+          private-key: ${{ secrets.TODO_REGISTRAR_APP_PRIVATE_KEY }}
+
+      - name: Upsert PR comment
+        env:
+          GITHUB_TOKEN: ${{ steps.app-token.outputs.token }}
+          GITHUB_REPOSITORY: ${{ inputs.target_repository }}
+          COMMENT_BODY: ${{ inputs.comment_body }}
+        run: |
+          COMMENT_PATH="${RUNNER_TEMP}/comment.md"
+          printf '%s\n' "$COMMENT_BODY" > "$COMMENT_PATH"
+          scripts/upsert-pr-comment.sh "${{ inputs.pr_number }}" "$COMMENT_PATH"

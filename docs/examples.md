@@ -5,7 +5,7 @@ Workflow snippets for common setups. Replace `@v1` with the [release version](ht
 ## Post comments as the TODO Registrar bot (recommended)
 
 1. [Install the TODO Registrar GitHub App](https://github.com/apps/todo-registrar) on your repository.
-2. Use the reusable workflow:
+2. Use the composite action:
 
 ```yaml
 name: TODO statistic
@@ -17,30 +17,7 @@ on:
 permissions:
   contents: read
   pull-requests: write
-
-jobs:
-  statistic:
-    uses: Aeliot-Tm/todo-registrar-statistic-action/.github/workflows/statistic.yaml@v1
-    with:
-      config: |
-        paths:
-          in: /code
-```
-
-## Minimal workflow (composite action)
-
-Posts as `github-actions[bot]`. For `todo-registrar[bot]`, use the reusable workflow above.
-
-```yaml
-name: TODO statistic
-
-on:
-  pull_request:
-    types: [opened, synchronize, reopened]
-
-permissions:
-  contents: read
-  pull-requests: write
+  id-token: write
 
 jobs:
   statistic:
@@ -48,6 +25,40 @@ jobs:
     steps:
       - uses: actions/checkout@v6
       - uses: Aeliot-Tm/todo-registrar-statistic-action@v1
+        with:
+          config: |
+            paths:
+              in: /code
+```
+
+## Minimal workflow
+
+```yaml
+name: TODO statistic
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened]
+
+permissions:
+  contents: read
+  pull-requests: write
+  id-token: write
+
+jobs:
+  statistic:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+      - uses: Aeliot-Tm/todo-registrar-statistic-action@v1
+```
+
+## Post as `github-actions[bot]`
+
+```yaml
+      - uses: Aeliot-Tm/todo-registrar-statistic-action@v1
+        with:
+          post_as_app: false
 ```
 
 ## Custom scan paths
@@ -73,3 +84,4 @@ and change `paths.in` (for example `/code/src`).
 - [Inputs](inputs.md)
 - [Permissions](permissions.md)
 - [How it works](how-it-works.md)
+- [GitHub App](github-app.md)

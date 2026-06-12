@@ -1,0 +1,7 @@
+name = "todo-registrar-posting"
+main = "src/worker.js"
+compatibility_date = "2024-08-01"
+compatibility_flags = ["nodejs_compat"]
+
+[vars]
+OIDC_AUDIENCE = "todo-registrar-statistic-action"
