@@ -1,6 +1,8 @@
 # Examples
 
-Workflow snippets for common setups. Replace `@v1` with the [release version](https://github.com/Aeliot-Tm/todo-registrar-statistic-action/releases) you want to pin.
+Workflow snippets for common setups.
+
+> Replace `@0.1.0` with the [release version](https://github.com/Aeliot-Tm/todo-registrar-statistic-action/releases) you want to pin.
 
 ## Minimal workflow
 
@@ -20,7 +22,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v6
-      - uses: Aeliot-Tm/todo-registrar-statistic-action@v1
+      - uses: Aeliot-Tm/todo-registrar-statistic-action@0.1.0
 ```
 
 ## Custom scan paths
@@ -32,7 +34,7 @@ Override `config` to limit which directories are scanned. Start from the [built-
 ```yaml
       - name: TODO statistic
         id: statistic
-        uses: Aeliot-Tm/todo-registrar-statistic-action@v1
+        uses: Aeliot-Tm/todo-registrar-statistic-action@0.1.0
 
       - name: Log result
         run: |

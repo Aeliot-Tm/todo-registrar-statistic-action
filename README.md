@@ -36,7 +36,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v6
-      - uses: Aeliot-Tm/todo-registrar-statistic-action@v1
+      - uses: Aeliot-Tm/todo-registrar-statistic-action@0.1.0
 ```
 
 With no `config` input, the action scans the whole repository (`/code`).
