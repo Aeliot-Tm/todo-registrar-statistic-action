@@ -2,7 +2,7 @@
 
 Workflow snippets for common setups.
 
-> Replace `@0.1.0` with the [release version](https://github.com/Aeliot-Tm/todo-registrar-statistic-action/releases) you want to pin.
+> Replace `@1.0.0` with the [release version](https://github.com/Aeliot-Tm/todo-registrar-statistic-action/releases) you want to pin.
 
 ## Minimal workflow
 
@@ -22,7 +22,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v6
-      - uses: Aeliot-Tm/todo-registrar-statistic-action@0.1.0
+      - uses: Aeliot-Tm/todo-registrar-statistic-action@1.0.0
 ```
 
 ## Custom config
@@ -34,7 +34,7 @@ and change `paths.in` (for example `/code/src`).
 ```yaml
   # ...
   - name: TODO statistic
-    uses: Aeliot-Tm/todo-registrar-statistic-action@0.1.0
+    uses: Aeliot-Tm/todo-registrar-statistic-action@1.0.0
     with:
       config: |
         paths:
@@ -58,7 +58,7 @@ and change `paths.in` (for example `/code/src`).
 ```yaml
       - name: TODO statistic
         id: statistic
-        uses: Aeliot-Tm/todo-registrar-statistic-action@0.1.0
+        uses: Aeliot-Tm/todo-registrar-statistic-action@1.0.0
 
       - name: Log result
         run: |
