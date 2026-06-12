@@ -7,6 +7,12 @@
 
 GitHub Action that scans a pull request branch for unregistered TODO comments and posts a sticky summary comment on the pull request.
 
+![comment-with-todo.png](docs/comment-with-todo.png)
+
+Or then no unregistered TODOs found:
+
+![comment-without-todo.png](docs/comment-without-todo.png)
+
 No issue tracker credentials are required. The action does not create tickets or modify source files.
 
 ### Features
